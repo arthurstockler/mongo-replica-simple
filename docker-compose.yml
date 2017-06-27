@@ -1,0 +1,62 @@
+version: "2"
+
+services:
+  mongo-primary:
+      image: mongo
+      command: mongod --smallfiles --storageEngine wiredTiger --replSet 'rs01_srv1' --keyFile /data/keyfile/mongo-keyfile
+      hostname: rs01primary
+      extra_hosts:
+        - "rs01primary:172.16.238.4"
+        - "rs01secondary01:172.16.238.5"
+        - "rs01secondary02:172.16.238.6"
+      volumes:
+        - ./data/primary:/data/db
+        - ./keyfile:/data/keyfile
+        - ./admin:/data/admin
+      ports:
+          - "30001:27017"
+      networks:
+        mongobrd:
+          ipv4_address: 172.16.238.4
+
+  mongo-secondary01:
+      image: mongo
+      command: mongod --smallfiles --storageEngine wiredTiger --replSet 'rs01_srv1' --keyFile /data/keyfile/mongo-keyfile
+      hostname: rs01secondary01
+      extra_hosts:
+        - "rs01primary:172.16.238.4"
+        - "rs01secondary01:172.16.238.5"
+        - "rs01secondary02:172.16.238.6"
+      volumes:
+          - ./data/secondary01:/data/db
+          - ./keyfile:/data/keyfile
+      ports:
+          - "30002:27017"
+      networks:
+        mongobrd:
+          ipv4_address: 172.16.238.5
+
+  mongo-secondary02:
+      image: mongo
+      command: mongod --smallfiles --storageEngine wiredTiger --replSet 'rs01_srv1' --keyFile /data/keyfile/mongo-keyfile
+      hostname: rs01secondary02
+      extra_hosts:
+        - "rs01primary:172.16.238.4"
+        - "rs01secondary01:172.16.238.5"
+        - "rs01secondary02:172.16.238.6"
+      volumes:
+          - ./data/secondary02:/data/db
+          - ./keyfile:/data/keyfile
+      ports:
+          - "30003:27017"
+      networks:
+        mongobrd:
+          ipv4_address: 172.16.238.6
+
+networks:
+  mongobrd:
+    driver: bridge
+    ipam:
+      config:
+       - subnet: 172.16.238.0/24
+         gateway: 172.16.238.1
